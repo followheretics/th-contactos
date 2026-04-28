@@ -1002,8 +1002,14 @@ function startBackgroundTasks(){
   // Ping presence every 30s
   pingPresence();
   pingInterval = setInterval(pingPresence, 30000);
-  // Check for updates every 45s
+  // Check for contact updates every 45s
   pollInterval = setInterval(checkForUpdates, 45000);
+  // Check for color updates every 20s (lightweight, no banner needed)
+  setInterval(async ()=>{
+    const prev = JSON.stringify(orgColorMap);
+    await loadColorsFromSheet();
+    if(JSON.stringify(orgColorMap) !== prev) renderAll();
+  }, 20000);
 }
 
 async function load(){
