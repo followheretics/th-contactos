@@ -500,6 +500,9 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
       <span>Directorio de Contactos</span>
     </div>
     <div class="login-form">
+      <div class="login-input-wrap" style="margin-bottom:10px">
+        <input class="login-input" id="loginName" type="text" placeholder="Tu nombre (visible a tus compañeros)" autocomplete="name" onkeydown="if(event.key==='Enter')document.getElementById('loginPwd').focus()" style="border-radius:8px;padding:10px 14px;width:100%;box-sizing:border-box">
+      </div>
       <div class="login-input-wrap">
         <input class="login-input" id="loginPwd" type="password" placeholder="Contraseña de acceso" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
         <button class="login-eye" id="loginEye" onclick="togglePwd()" tabindex="-1" type="button">
@@ -585,6 +588,11 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
     <span class="chip-num" id="statDiscords">0</span>
     <span class="chip-lbl">Con Discord</span>
   </button>
+  <button class="stat-chip" id="chipTwitter" onclick="setChipFilter('hasTwitter',true)">
+    <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.262 5.632 5.902-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    <span class="chip-num" id="statTwitters">0</span>
+    <span class="chip-lbl">Con Twitter/X</span>
+  </button>
   <div class="stat-sep"></div>
   <div class="stat-orgs-wrap">
     <span class="chip-num" id="statOrgs">0</span>
@@ -630,6 +638,10 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
   <div class="legend-pills" id="orgLegend"></div>
 </div>
 <div class="org-manager">
+  <button class="org-manager-btn" onclick="openAreaManager()" style="margin-right:6px">
+    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Áreas
+  </button>
   <button class="org-manager-btn" onclick="openOrgManager()">
     <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     Gestionar organizaciones
@@ -711,9 +723,6 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
           <div class="form-group"><label>Área temática</label>
             <select class="fs" id="fArea">
               <option value="">— Seleccionar —</option>
-              <option>Competición</option><option>Contenido</option><option>Coaching</option>
-              <option>Scouting</option><option>Patrocinio</option><option>Medios</option>
-              <option>Gestión</option><option>Tecnología</option><option>Otro</option>
             </select>
           </div>
           <div class="form-group"><label>Nivel de contacto</label>
@@ -775,6 +784,23 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
   </div>
 </div>
 
+
+<!-- Area Manager Modal -->
+<div class="overlay-modal" id="overlayAreaMgr">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Gestionar <span>Áreas</span></div>
+      <button class="modal-close" onclick="closeAreaManager()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px 20px">
+      <div id="areaList" style="margin-bottom:16px"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <input id="newAreaInput" class="fs" type="text" placeholder="Nueva área..." style="flex:1;padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text1)" onkeydown="if(event.key==='Enter')addArea()">
+        <button class="btn-primary" onclick="addArea()" style="padding:7px 14px;border-radius:6px">Añadir</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Org Manager Modal -->
 <div class="overlay-modal" id="overlayOrgMgr">
@@ -941,10 +967,8 @@ function showSyncStatus(msg){
 // ── Presence & polling ───────────────────────────────────────────────────
 let userName = localStorage.getItem('th_username') || '';
 function getUserName(){
-  if(!userName){
-    userName = prompt('¿Cómo te llamas? (Se mostrará a tus compañeros)') || 'Anónimo';
-    localStorage.setItem('th_username', userName);
-  }
+  // Username is now set at login — fallback only if somehow missing
+  if(!userName) userName = localStorage.getItem('th_username') || 'Usuario';
   return userName;
 }
 
@@ -968,11 +992,12 @@ async function pingPresence(){
 function updatePresenceUI(count, others){
   const el = document.getElementById('presenceIndicator');
   if(!el) return;
-  const names = others.length ? others.join(', ') : '';
-  el.innerHTML = count <= 1
+  const validOthers = others.filter(n => n && n !== 'Anónimo' && n !== 'Usuario');
+  const names = validOthers.join(', ');
+  el.innerHTML = others.length === 0
     ? '<span class="presence-dot solo"></span><span class="presence-text">Solo tú</span>'
-    : '<span class="presence-dot multi"></span><span class="presence-text">'+count+' conectados'+(names?' · '+names:'')+'</span>';
-  el.title = count > 1 ? 'También conectados: '+names : 'Eres el único conectado ahora';
+    : '<span class="presence-dot multi"></span><span class="presence-text">'+(others.length+1)+' conectados'+(names?' · '+names:'')+' </span>';
+  el.title = others.length > 0 ? 'También conectados: '+(names||others.length+' usuario(s)') : 'Eres el único conectado ahora';
 }
 
 async function checkForUpdates(){
@@ -980,12 +1005,12 @@ async function checkForUpdates(){
   try{
     const res = await fetch('https://script.google.com/macros/s/AKfycbxteBppeRpT2RIvXb4NqmisRB8CLl9CvPEuyzGF0a6RPQOzJDTQqac2E5odY8imVwiVOg/exec?action=get&token='+API_TOKEN);
     const data = await res.json();
-    if(data.ts){
-      if(data.ts > lastSheetTs + 2000){
-        showUpdateBanner();
-      }
-      lastSheetTs = data.ts; // actualizar siempre para no re-disparar el banner
-    }
+    if(!data.contacts) return;
+    // Solo mostrar banner si realmente cambiaron los contactos (comparar huella)
+    const remote = data.contacts.length + ':' + data.contacts.map(c=>String(c.id)).join(',');
+    const local  = contacts.length + ':' + contacts.map(c=>String(c.id)).join(',');
+    if(remote !== local) showUpdateBanner();
+    if(data.ts) lastSheetTs = data.ts;
   }catch(e){}
 }
 
@@ -1025,6 +1050,7 @@ async function load(){
   // Load colors first so they're ready before contacts render
   await loadColorsFromSheet();
   loadFromSheet();
+  populateAreaSelect();
 }
 
 function getFiltered(){
@@ -1074,6 +1100,7 @@ function updateMeta(){
   document.getElementById('statEmails').textContent=contacts.filter(c=>c.email).length;
   document.getElementById('statLinkedins').textContent=contacts.filter(c=>c.linkedin).length;
   document.getElementById('statDiscords').textContent=contacts.filter(c=>c.discord).length;
+  document.getElementById('statTwitters').textContent=contacts.filter(c=>c.extraRed && c.extraRed.includes('twitter.com')).length;
   const orgs=[...new Set(contacts.map(c=>c.organizacion).filter(Boolean))];
   document.getElementById('statOrgs').textContent=orgs.length;
   document.getElementById('legendCount').textContent=`(${orgs.length})`;
@@ -1229,7 +1256,7 @@ function closeDetail(){document.getElementById('overlayDetail').classList.remove
 
 const FIELDS=[{id:'fNombre',key:'nombre'},{id:'fApellidos',key:'apellidos'},{id:'fNick',key:'nick'},{id:'fFoto',key:'foto'},{id:'fOrg',key:'organizacion'},{id:'fCargo',key:'cargo'},{id:'fArea',key:'area'},{id:'fEmail',key:'email'},{id:'fTel',key:'telefono'},{id:'fLinkedin',key:'linkedin'},{id:'fNivel',key:'nivel'},{id:'fPais',key:'pais'},{id:'fDiscord',key:'discord'},{id:'fExtraRed',key:'extraRed'},{id:'fNotas',key:'notas'}];
 
-function openModal(fill={}){editingId=fill.id||null;document.getElementById('modalTitle').innerHTML=editingId?'Editar <span>Contacto</span>':'Nuevo <span>Contacto</span>';FIELDS.forEach(({id,key})=>{if(key==='foto')return;const el=document.getElementById(id);if(el)el.value=fill[key]||'';});const _foto=fill.foto||'';document.getElementById('fFoto').value=_foto;document.getElementById('fFotoInput').value='';const _prev=document.getElementById('fFotoPreview');if(_foto){_prev.innerHTML=`<img src="${_foto}" alt="">`;document.getElementById('fFotoRemove').style.display='inline-flex';}else{_prev.innerHTML='<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';document.getElementById('fFotoRemove').style.display='none';}document.getElementById('overlayModal').classList.add('open');setTimeout(()=>document.getElementById('fNombre').focus(),50);}
+function openModal(fill={}){editingId=fill.id||null;document.getElementById('modalTitle').innerHTML=editingId?'Editar <span>Contacto</span>':'Nuevo <span>Contacto</span>';populateAreaSelect();FIELDS.forEach(({id,key})=>{if(key==='foto')return;const el=document.getElementById(id);if(el)el.value=fill[key]||'';});const _foto=fill.foto||'';document.getElementById('fFoto').value=_foto;document.getElementById('fFotoInput').value='';const _prev=document.getElementById('fFotoPreview');if(_foto){_prev.innerHTML=`<img src="${_foto}" alt="">`;document.getElementById('fFotoRemove').style.display='inline-flex';}else{_prev.innerHTML='<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';document.getElementById('fFotoRemove').style.display='none';}document.getElementById('overlayModal').classList.add('open');setTimeout(()=>document.getElementById('fNombre').focus(),50);}
 function closeModal(){document.getElementById('overlayModal').classList.remove('open');}
 function openEdit(id){const c=contacts.find(x=>x.id===id);if(c)openModal(c);}
 
@@ -1331,7 +1358,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeD
 let chipFilter = null;
 function setChipFilter(type, val){
   chipFilter = type ? {type,val} : null;
-  ['chipAll','chipAlto','chipMedio','chipBajo','chipEmail','chipLinkedin','chipDiscord'].forEach(id=>{
+  ['chipAll','chipAlto','chipMedio','chipBajo','chipEmail','chipLinkedin','chipDiscord','chipTwitter'].forEach(id=>{
     document.getElementById(id)?.classList.remove('active');
   });
   if(!type) document.getElementById('chipAll').classList.add('active');
@@ -1341,6 +1368,7 @@ function setChipFilter(type, val){
   else if(type==='hasEmail') document.getElementById('chipEmail').classList.add('active');
   else if(type==='hasLinkedin') document.getElementById('chipLinkedin').classList.add('active');
   else if(type==='hasDiscord') document.getElementById('chipDiscord').classList.add('active');
+  else if(type==='hasTwitter') document.getElementById('chipTwitter').classList.add('active');
   renderAll();
 }
 
@@ -1353,6 +1381,7 @@ getFiltered = function(){
   if(chipFilter.type==='hasEmail') return rows.filter(c=>c.email);
   if(chipFilter.type==='hasLinkedin') return rows.filter(c=>c.linkedin);
   if(chipFilter.type==='hasDiscord') return rows.filter(c=>c.discord);
+  if(chipFilter.type==='hasTwitter') return rows.filter(c=>c.extraRed && c.extraRed.includes('twitter.com'));
   return rows;
 };
 
@@ -1390,6 +1419,85 @@ function renderOrgManager(){
   }).join('');
 }
 function closeOrgManager(){document.getElementById('overlayOrgMgr').classList.remove('open');}
+
+// ── Area Manager ──────────────────────────────────────────────────────────
+// Areas are stored in localStorage so they persist across sessions
+const DEFAULT_AREAS = ['Competición','Contenido','Coaching','Scouting','Patrocinio','Medios','Gestión','Tecnología','Otro'];
+function getAreas(){
+  try{
+    const stored = localStorage.getItem('th_areas');
+    return stored ? JSON.parse(stored) : [...DEFAULT_AREAS];
+  }catch(e){ return [...DEFAULT_AREAS]; }
+}
+function saveAreas(areas){
+  localStorage.setItem('th_areas', JSON.stringify(areas));
+}
+function openAreaManager(){
+  renderAreaManager();
+  document.getElementById('overlayAreaMgr').classList.add('open');
+}
+function closeAreaManager(){
+  document.getElementById('overlayAreaMgr').classList.remove('open');
+}
+function renderAreaManager(){
+  const areas = getAreas();
+  const list = document.getElementById('areaList');
+  list.innerHTML = '';
+  areas.forEach((area, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px';
+    row.innerHTML = `
+      <input class="fs" type="text" value="${area}" data-idx="${i}"
+        style="flex:1;padding:6px 10px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);color:var(--text1)"
+        onchange="renameArea(${i}, this.value)">
+      <button onclick="deleteArea(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px" title="Eliminar">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>`;
+    list.appendChild(row);
+  });
+}
+function addArea(){
+  const input = document.getElementById('newAreaInput');
+  const val = input.value.trim();
+  if(!val) return;
+  const areas = getAreas();
+  if(areas.includes(val)){ showToast('Ya existe esa área','warn'); return; }
+  areas.push(val);
+  saveAreas(areas);
+  input.value = '';
+  renderAreaManager();
+  populateAreaSelect();
+  showToast('✅ Área añadida','ok');
+}
+function renameArea(idx, newName){
+  if(!newName.trim()) return;
+  const areas = getAreas();
+  areas[idx] = newName.trim();
+  saveAreas(areas);
+  populateAreaSelect();
+}
+function deleteArea(idx){
+  const areas = getAreas();
+  if(!confirm(\`¿Eliminar el área "${areas[idx]}"?\`)) return;
+  areas.splice(idx, 1);
+  saveAreas(areas);
+  renderAreaManager();
+  populateAreaSelect();
+  showToast('🗑️ Área eliminada');
+}
+function populateAreaSelect(){
+  const areas = getAreas();
+  const sel = document.getElementById('fArea');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Seleccionar —</option>';
+  areas.forEach(a => {
+    const op = document.createElement('option');
+    op.value = op.textContent = a;
+    if(a === current) op.selected = true;
+    sel.appendChild(op);
+  });
+}
 function colToHex(col){
   if(col.startsWith('#'))return col;
   const m=col.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
@@ -1452,12 +1560,21 @@ async function sha256(str) {
 }
 
 async function doLogin() {
+  const nameVal = document.getElementById('loginName').value.trim();
+  if(!nameVal){
+    document.getElementById('loginName').focus();
+    document.getElementById('loginName').style.borderColor='var(--accent)';
+    return;
+  }
   const pwd = document.getElementById('loginPwd').value;
   const hash = await sha256(pwd);
   if(hash === PWD_HASH) {
+    userName = nameVal;
+    localStorage.setItem('th_username', userName);
     sessionStorage.setItem(SESSION_KEY, '1');
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('loginPwd').value = '';
+    document.getElementById('loginName').value = '';
   } else {
     const err = document.getElementById('loginError');
     err.classList.add('show');
