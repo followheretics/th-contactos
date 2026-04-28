@@ -431,6 +431,68 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
 }
 
 
+/* ── Bulk mode ── */
+.bulk-bar {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(120px);
+  background:var(--bg2); border:1px solid var(--gold);
+  border-radius:10px; padding:12px 18px;
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  z-index:80; box-shadow:0 8px 32px rgba(0,0,0,.35), 0 0 0 1px var(--gold-glow);
+  transition:transform .3s cubic-bezier(.22,.68,0,1.2);
+  white-space:nowrap; min-width:320px;
+}
+.bulk-bar.visible { transform:translateX(-50%) translateY(0); }
+.bulk-count {
+  font:700 13px 'Barlow Condensed',sans-serif; letter-spacing:1px;
+  color:var(--gold); flex-shrink:0;
+}
+.bulk-select {
+  padding:6px 10px; background:var(--input-bg);
+  border:1px solid var(--border2); border-radius:6px;
+  color:var(--text); font:12px 'Barlow',sans-serif;
+  cursor:pointer; outline:none; flex:1; min-width:140px;
+}
+.bulk-select:focus { border-color:var(--gold); }
+.bulk-field-select {
+  padding:6px 10px; background:var(--input-bg);
+  border:1px solid var(--border2); border-radius:6px;
+  color:var(--text); font:12px 'Barlow',sans-serif;
+  cursor:pointer; outline:none;
+}
+.bulk-field-select:focus { border-color:var(--gold); }
+.bulk-apply {
+  padding:7px 14px; background:var(--gold); border:none;
+  border-radius:6px; color:#030405;
+  font:700 11px 'Barlow Condensed',sans-serif; letter-spacing:1.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .15s; flex-shrink:0;
+}
+.bulk-apply:hover { filter:brightness(1.1); }
+.bulk-apply:disabled { opacity:.4; cursor:default; }
+.bulk-del {
+  padding:7px 12px; background:transparent; border:1px solid #c0392b;
+  border-radius:6px; color:#c0392b;
+  font:700 11px 'Barlow Condensed',sans-serif; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer; transition:all .15s; flex-shrink:0;
+}
+.bulk-del:hover { background:rgba(192,57,43,.12); }
+.bulk-close {
+  background:none; border:none; cursor:pointer;
+  color:var(--text3); font-size:16px; line-height:1;
+  padding:2px 4px; transition:color .15s; flex-shrink:0;
+}
+.bulk-close:hover { color:var(--gold); }
+/* Checkbox column */
+.cb-col { width:36px; text-align:center; }
+.bulk-cb { width:15px; height:15px; cursor:pointer; accent-color:var(--gold); }
+/* Org header selectable */
+.group-header-row.bulk-selectable td { cursor:pointer; }
+.group-header-row.bulk-selectable:hover .group-header-cell { background:var(--bg3) !important; }
+.group-header-org-cb { width:14px; height:14px; cursor:pointer; accent-color:var(--gold); margin-right:6px; vertical-align:middle; }
+/* Bulk mode active row highlight */
+tr.bulk-selected td { background:rgba(193,175,113,.06) !important; }
+/* Bulk mode toggle btn */
+.btn-bulk-active { background:var(--gold) !important; color:#030405 !important; border-color:var(--gold) !important; }
+
 .group-header-row td { padding:0 !important; border:none !important; }
 .group-header-cell {
   padding:8px 14px 5px !important;
@@ -562,6 +624,10 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Cambiar tema">
       <svg id="iconSun" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       <svg id="iconMoon" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button class="btn btn-ghost" id="btnBulk" onclick="toggleBulkMode()" title="Edición masiva">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="5" width="4" height="4" rx="1"/><rect x="3" y="11" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/><line x1="10" y1="13" x2="21" y2="13"/><line x1="10" y1="19" x2="21" y2="19"/></svg>
+      <span>Bulk</span>
     </button>
     <button class="btn btn-ghost" onclick="openFeedback()" title="Reportar error o enviar feedback">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -894,6 +960,25 @@ input[list]::-webkit-calendar-picker-indicator { opacity:0; }
       <button class="btn btn-ghost" onclick="closeOrgManager()">Cerrar</button>
     </div>
   </div>
+</div>
+
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-count" id="bulkCount">0 seleccionados</span>
+  <select class="bulk-field-select" id="bulkField" onchange="updateBulkValueSelect()">
+    <option value="">— Campo —</option>
+    <option value="tipoRelacion">Tipo de relación</option>
+    <option value="area">Área</option>
+    <option value="organizacion">Organización</option>
+    <option value="cargo">Cargo</option>
+    <option value="pais">País</option>
+  </select>
+  <select class="bulk-select" id="bulkValue" style="display:none">
+    <option value="">— Valor —</option>
+  </select>
+  <input class="bulk-select" id="bulkValueText" type="text" placeholder="Nuevo valor..." style="display:none">
+  <button class="bulk-apply" id="bulkApplyBtn" onclick="applyBulk()">Aplicar</button>
+  <button class="bulk-del" onclick="deleteBulk()">Eliminar</button>
+  <button class="bulk-close" onclick="toggleBulkMode()" title="Salir del modo bulk">✕</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1276,7 +1361,14 @@ function renderContactRow(c){
   }
   const linksHtml = '<div class="links-cell">'+links.join('')+'</div>';
 
-  return '<tr onclick="openDetail('+c.id+')">'
+  const isSelected = bulkSelected.has(c.id);
+  const cbCol = bulkMode
+    ? '<td class="cb-col" onclick="event.stopPropagation()"><input type="checkbox" class="bulk-cb" '+(isSelected?'checked':'')
+      +' onchange="toggleBulkContact('+c.id+', this.checked)"></td>'
+    : '';
+
+  return '<tr data-bulk-id="'+c.id+'" onclick="'+(bulkMode?'toggleBulkContact('+c.id+',!document.querySelector(\'[data-bulk-id=\\\'\'+'+c.id+'+\'\\\']\').querySelector(\'.bulk-cb\').checked)':'openDetail('+c.id+')')+'"'+(isSelected?' class="bulk-selected"':'')+'>'
+    +cbCol
     +'<td><div class="name-cell"><div class="avatar" style="background:'+col+'">'+avContent+'</div><div>'+nameHtml+'</div></div></td>'
     +'<td>'+orgChip(c.organizacion)+'</td>'
     +'<td>'+(c.cargo||'—')+'</td>'
@@ -1292,6 +1384,21 @@ function renderContactRow(c){
 }
 
 function renderTableGrouped(rows){
+  // Add checkbox header col when in bulk mode
+  const cbTh = bulkMode
+    ? '<th class="cb-col"><input type="checkbox" class="bulk-cb" title="Seleccionar todos" onchange="selectAllBulk()" '+(bulkSelected.size===rows.length&&rows.length>0?'checked':'')+'></th>'
+    : '';
+  // Inject cb header if not already there
+  const thead = document.querySelector('thead tr');
+  if(thead){
+    const existingCb = thead.querySelector('.cb-col');
+    if(bulkMode && !existingCb){
+      thead.insertAdjacentHTML('afterbegin', cbTh);
+    } else if(!bulkMode && existingCb){
+      existingCb.remove();
+    }
+  }
+
   if(!groupBy) return rows.map(c => renderContactRow(c)).join('');
   const groups = {}, order = [];
   rows.forEach(c => {
@@ -1301,7 +1408,13 @@ function renderTableGrouped(rows){
   });
   return order.map(key => {
     const col = groupBy==='organizacion' ? getOrgColor(key) : 'var(--gold)';
-    return '<tr class="group-header-row"><td colspan="8" class="group-header-cell">'
+    const orgAllSelected = groups[key].every(c => bulkSelected.has(c.id));
+    const orgCb = bulkMode && groupBy==='organizacion'
+      ? `<input type="checkbox" class="group-header-org-cb" ${orgAllSelected?'checked':''} onclick="event.stopPropagation();toggleBulkOrg('${key.replace(/'/g,"\\'")}', this.checked)" title="Seleccionar toda la org">`
+      : '';
+    const colspan = bulkMode ? 9 : 8;
+    return '<tr class="group-header-row"><td colspan="'+colspan+'" class="group-header-cell">'
+      + orgCb
       +'<span class="group-header-dot" style="background:'+col+'"></span>'
       +'<span class="group-header-name">'+key+'</span>'
       +'<span class="group-header-count">'+groups[key].length+'</span>'
@@ -1309,6 +1422,23 @@ function renderTableGrouped(rows){
       + groups[key].map(c => renderContactRow(c)).join('');
   }).join('');
 }
+
+// Patch renderTable to also update thead checkbox col outside of grouped mode
+const _origRenderTable = renderTable;
+renderTable = function(){
+  _origRenderTable();
+  // sync thead cb col for non-grouped view
+  const thead = document.querySelector('thead tr');
+  if(!thead) return;
+  const existingCb = thead.querySelector('.cb-col');
+  if(bulkMode && !existingCb){
+    const rows = getFiltered();
+    thead.insertAdjacentHTML('afterbegin',
+      '<th class="cb-col"><input type="checkbox" class="bulk-cb" title="Seleccionar todos" onchange="selectAllBulk()" '+(bulkSelected.size===rows.length&&rows.length>0?'checked':'')+'></th>');
+  } else if(!bulkMode && existingCb){
+    existingCb.remove();
+  }
+};
 
 function setView(v){currentView=v;document.getElementById('tableWrap').style.display=v==='table'?'block':'none';document.getElementById('cardsWrap').style.display=v==='cards'?'grid':'none';document.getElementById('btnTable').classList.toggle('active',v==='table');document.getElementById('btnCards').classList.toggle('active',v==='cards');}
 
@@ -1863,6 +1993,125 @@ function togglePwd() {
     });
   }
 })();
+
+// ── Bulk Mode ─────────────────────────────────────────────────────────────
+let bulkMode = false;
+let bulkSelected = new Set(); // set of contact ids
+
+function toggleBulkMode(){
+  bulkMode = !bulkMode;
+  bulkSelected.clear();
+  const btn = document.getElementById('btnBulk');
+  if(bulkMode){
+    btn.classList.add('btn-bulk-active');
+    btn.querySelector('span').textContent = 'Salir bulk';
+  } else {
+    btn.classList.remove('btn-bulk-active');
+    btn.querySelector('span').textContent = 'Bulk';
+    document.getElementById('bulkBar').classList.remove('visible');
+  }
+  renderAll();
+}
+
+function toggleBulkContact(id, checked){
+  if(checked) bulkSelected.add(id);
+  else bulkSelected.delete(id);
+  updateBulkBar();
+  // update row highlight
+  const row = document.querySelector(`tr[data-bulk-id="${id}"]`);
+  if(row) row.classList.toggle('bulk-selected', checked);
+}
+
+function toggleBulkOrg(org, checked){
+  const rows = getFiltered().filter(c => c.organizacion === org);
+  rows.forEach(c => {
+    if(checked) bulkSelected.add(c.id);
+    else bulkSelected.delete(c.id);
+  });
+  updateBulkBar();
+  renderAll(); // re-render to sync checkboxes
+}
+
+function selectAllBulk(){
+  const all = getFiltered();
+  if(bulkSelected.size === all.length){
+    bulkSelected.clear();
+  } else {
+    all.forEach(c => bulkSelected.add(c.id));
+  }
+  updateBulkBar();
+  renderAll();
+}
+
+function updateBulkBar(){
+  const n = bulkSelected.size;
+  const bar = document.getElementById('bulkBar');
+  document.getElementById('bulkCount').textContent = n === 0 ? '0 seleccionados' : `${n} seleccionado${n!==1?'s':''}`;
+  bar.classList.toggle('visible', n > 0 || bulkMode);
+}
+
+function updateBulkValueSelect(){
+  const field = document.getElementById('bulkField').value;
+  const valSel = document.getElementById('bulkValue');
+  const valTxt = document.getElementById('bulkValueText');
+  valSel.style.display = 'none';
+  valTxt.style.display = 'none';
+  if(!field) return;
+  if(field === 'tipoRelacion'){
+    valSel.innerHTML = '<option value="">— Valor —</option>' + getRelaciones().map(r=>`<option>${r}</option>`).join('');
+    valSel.style.display = '';
+  } else if(field === 'area'){
+    valSel.innerHTML = '<option value="">— Valor —</option>' + getAreas().map(a=>`<option>${a}</option>`).join('');
+    valSel.style.display = '';
+  } else if(field === 'organizacion'){
+    const orgs = [...new Set(contacts.map(c=>c.organizacion).filter(Boolean))].sort();
+    valSel.innerHTML = '<option value="">— Valor —</option>' + orgs.map(o=>`<option>${o}</option>`).join('');
+    valSel.style.display = '';
+  } else {
+    valTxt.style.display = '';
+    valTxt.value = '';
+  }
+}
+
+function applyBulk(){
+  if(bulkSelected.size === 0){ showToast('⚠️ Selecciona al menos un contacto','err'); return; }
+  const field = document.getElementById('bulkField').value;
+  if(!field){ showToast('⚠️ Elige un campo a editar','err'); return; }
+  const valSel = document.getElementById('bulkValue');
+  const valTxt = document.getElementById('bulkValueText');
+  const value = valSel.style.display !== 'none' ? valSel.value : valTxt.value.trim();
+  if(!value){ showToast('⚠️ Elige o escribe un valor','err'); return; }
+
+  const ids = [...bulkSelected];
+  ids.forEach(id => {
+    const idx = contacts.findIndex(c => c.id === id);
+    if(idx === -1) return;
+    contacts[idx][field] = value;
+    _syncQueue.push({op:'update', contact: contacts[idx]});
+  });
+  _drainQueue();
+  saveLocal();
+  renderAll();
+  showToast(`✅ ${ids.length} contacto${ids.length!==1?'s':''} actualizados`,'ok');
+}
+
+function deleteBulk(){
+  if(bulkSelected.size === 0){ showToast('⚠️ Selecciona al menos un contacto','err'); return; }
+  const n = bulkSelected.size;
+  if(!confirm(`¿Eliminar ${n} contacto${n!==1?'s':''}? Esta acción no se puede deshacer.`)) return;
+  const ids = [...bulkSelected];
+  ids.forEach(id => {
+    const c = contacts.find(x => x.id === id);
+    if(c) _syncQueue.push({op:'delete', contact:c});
+  });
+  contacts = contacts.filter(c => !bulkSelected.has(c.id));
+  bulkSelected.clear();
+  _drainQueue();
+  saveLocal();
+  updateBulkBar();
+  renderAll();
+  showToast(`🗑️ ${n} contacto${n!==1?'s':''} eliminados`);
+}
 
 load();renderAll();startBackgroundTasks();
 </script>
